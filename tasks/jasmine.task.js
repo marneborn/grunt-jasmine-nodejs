@@ -41,7 +41,7 @@ module.exports = function (grunt) {
         });
     }
 
-    function expand(glob, suffixes) {
+    function expand(glob, suffixes, taskOptions) {
         var options = {
             // matchBase: true,
             filter: function (filePath) {
@@ -49,6 +49,9 @@ module.exports = function (grunt) {
                     && hasSuffix(suffixes, filePath.toLowerCase());
             }
         };
+        if (taskOptions && taskOptions.ignore) {
+            options.ignore = taskOptions.ignore;
+        }
         // filter and expand glob
         var files = grunt.file.expand(options, glob);
         // resolve file paths
@@ -117,7 +120,8 @@ module.exports = function (grunt) {
             defaultTimeout: null, // defaults to 5000
             stopOnFailure: false,
             traceFatal: true,
-            reporters: {}
+            reporters: {},
+            ignore: []
             // , customReporters: []
         });
 
@@ -272,7 +276,7 @@ module.exports = function (grunt) {
 
         // Spec files
         var specSuffixes = ensureArray(options.specNameSuffix, ','),
-            specFiles = expand(conf.specs || [], specSuffixes),
+            specFiles = expand(conf.specs || [], specSuffixes, options),
             gruntFilter = grunt.option('filter');
 
         grunt.verbose.writeln('Spec Files:\n  ', specFiles);
@@ -285,7 +289,7 @@ module.exports = function (grunt) {
         // Helper files
         if (options.useHelpers && options.helperNameSuffix) {
             var helperSuffixes = ensureArray(options.helperNameSuffix, ',');
-            helperFiles = expand(conf.helpers || [], helperSuffixes);
+            helperFiles = expand(conf.helpers || [], helperSuffixes, options);
             grunt.verbose.writeln('Helper Files:\n  ', helperFiles);
             jasmineRunner.loadHelpers(helperFiles);
         }
